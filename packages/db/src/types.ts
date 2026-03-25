@@ -1,4 +1,4 @@
-/** Auto-generated Supabase Database types — extend as tables are added */
+/** Supabase Database types — matches migrations 001 + 002 */
 export interface Database {
   public: {
     Tables: {
@@ -62,6 +62,8 @@ export interface Database {
           total: number;
           markup_percent: number;
           tax_percent: number;
+          overhead_percent: number;
+          profit_percent: number;
           created_at: string;
           updated_at: string;
           owner_id: string;
@@ -74,6 +76,8 @@ export interface Database {
           total?: number;
           markup_percent?: number;
           tax_percent?: number;
+          overhead_percent?: number;
+          profit_percent?: number;
           created_at?: string;
           updated_at?: string;
           owner_id: string;
@@ -84,6 +88,8 @@ export interface Database {
           total?: number;
           markup_percent?: number;
           tax_percent?: number;
+          overhead_percent?: number;
+          profit_percent?: number;
           updated_at?: string;
         };
       };
@@ -91,12 +97,18 @@ export interface Database {
         Row: {
           id: string;
           estimate_id: string;
+          row_type: 'division_header' | 'subsection_header' | 'item_note' | 'line_item' | 'subtotal';
           csi_code: string;
           description: string;
           quantity: number;
           unit: string;
           unit_cost: number;
-          total: number;
+          sheet_no: string;
+          detail_no: string;
+          waste_percent: number;
+          material_unit_cost: number;
+          labor_unit_cost: number;
+          total_cost: number;
           sort_order: number;
           parent_id: string | null;
           created_at: string;
@@ -104,24 +116,61 @@ export interface Database {
         Insert: {
           id?: string;
           estimate_id: string;
+          row_type?: 'division_header' | 'subsection_header' | 'item_note' | 'line_item' | 'subtotal';
           csi_code: string;
           description: string;
-          quantity: number;
-          unit: string;
-          unit_cost: number;
-          total?: number;
+          quantity?: number;
+          unit?: string;
+          unit_cost?: number;
+          sheet_no?: string;
+          detail_no?: string;
+          waste_percent?: number;
+          material_unit_cost?: number;
+          labor_unit_cost?: number;
+          total_cost?: number;
           sort_order?: number;
           parent_id?: string | null;
         };
         Update: {
+          row_type?: 'division_header' | 'subsection_header' | 'item_note' | 'line_item' | 'subtotal';
           csi_code?: string;
           description?: string;
           quantity?: number;
           unit?: string;
           unit_cost?: number;
-          total?: number;
+          sheet_no?: string;
+          detail_no?: string;
+          waste_percent?: number;
+          material_unit_cost?: number;
+          labor_unit_cost?: number;
+          total_cost?: number;
           sort_order?: number;
           parent_id?: string | null;
+        };
+      };
+      alternates: {
+        Row: {
+          id: string;
+          estimate_id: string;
+          name: string;
+          description: string;
+          amount: number;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          estimate_id: string;
+          name: string;
+          description?: string;
+          amount?: number;
+          sort_order?: number;
+        };
+        Update: {
+          name?: string;
+          description?: string;
+          amount?: number;
+          sort_order?: number;
         };
       };
     };
@@ -130,6 +179,7 @@ export interface Database {
     Enums: {
       bid_stage: 'lead' | 'estimating' | 'review' | 'submitted' | 'won' | 'lost';
       estimate_status: 'draft' | 'in_review' | 'approved' | 'rejected';
+      row_type: 'division_header' | 'subsection_header' | 'item_note' | 'line_item' | 'subtotal';
     };
   };
 }

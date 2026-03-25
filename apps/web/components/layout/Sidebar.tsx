@@ -15,8 +15,10 @@ import {
   ScanLine,
   Settings,
   HardHat,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth-context';
 
 interface NavSection {
   label: string;
@@ -59,6 +61,10 @@ const navSections: NavSection[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <aside className="flex h-full w-64 flex-col border-r border-gray-200 bg-white">
@@ -113,12 +119,19 @@ export function Sidebar() {
       <div className="border-t border-gray-200 p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-brand-700 text-sm font-semibold">
-            BA
+            {initials}
           </div>
           <div className="flex-1 truncate">
-            <p className="text-sm font-medium text-gray-900">Bill Asmar</p>
-            <p className="text-xs text-gray-500">Precon Executive</p>
+            <p className="text-sm font-medium text-gray-900">{displayName}</p>
+            <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
+          <button
+            onClick={() => signOut()}
+            className="text-gray-400 hover:text-red-500 transition-colors"
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </aside>

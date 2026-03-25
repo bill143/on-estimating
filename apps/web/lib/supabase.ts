@@ -1,7 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@on/db';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+export type TypedSupabaseClient = ReturnType<typeof createClient>;
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export function createClient() {
+  return createSupabaseClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+// Singleton for client-side usage
+let browserClient: TypedSupabaseClient | null = null;
+
+export function getSupabase() {
+  if (!browserClient) {
+    browserClient = createClient();
+  }
+  return browserClient;
+}
