@@ -1,9 +1,6 @@
 -- ON Estimating — Projects & Bid Pipeline Schema
 -- Priority 1: Bid Pipeline Dashboard + Kanban Board
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Bid Stage Enum
 CREATE TYPE bid_stage AS ENUM ('lead', 'estimating', 'review', 'submitted', 'won', 'lost');
 
@@ -14,7 +11,7 @@ CREATE TYPE estimate_status AS ENUM ('draft', 'in_review', 'approved', 'rejected
 -- PROJECTS TABLE (Bid Pipeline)
 -- =============================================
 CREATE TABLE projects (
-  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL,
   client      TEXT NOT NULL,
   address     TEXT,
@@ -53,7 +50,7 @@ CREATE TRIGGER projects_updated_at
 -- ESTIMATES TABLE
 -- =============================================
 CREATE TABLE estimates (
-  id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id     UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name           TEXT NOT NULL,
   status         estimate_status NOT NULL DEFAULT 'draft',
@@ -75,7 +72,7 @@ CREATE TRIGGER estimates_updated_at
 -- LINE ITEMS TABLE
 -- =============================================
 CREATE TABLE line_items (
-  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   estimate_id UUID NOT NULL REFERENCES estimates(id) ON DELETE CASCADE,
   csi_code    TEXT NOT NULL,
   description TEXT NOT NULL,
