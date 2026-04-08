@@ -1,13 +1,16 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/lib/auth-context';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { ChatSidebar } from '@/components/ai/ChatSidebar';
+import { KeyboardShortcuts } from '@/components/system/KeyboardShortcuts';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "ON Estimating | O'Neill Contractors",
-  description: 'Enterprise Construction Estimating Platform',
+  title: "NEXUS ON Estimating | O'Neill Contractors",
+  description: 'AI-Powered Enterprise Construction Estimating Platform',
 };
 
 export default function RootLayout({
@@ -16,9 +19,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full`}>
-        <AuthProvider>{children}</AuthProvider>
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <body className={`${inter.className} h-full bg-white dark:bg-gray-950`}>
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+            <ChatSidebar />
+            <KeyboardShortcuts />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

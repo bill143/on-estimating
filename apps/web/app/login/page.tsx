@@ -30,24 +30,30 @@ function LoginForm() {
     setError(null);
     setLoading(true);
 
-    if (mode === 'login') {
-      const { error: err } = await signIn(email, password);
-      if (err) {
-        setError(err);
-        setLoading(false);
+    try {
+      if (mode === 'login') {
+        const { error: err } = await signIn(email, password);
+        if (err) {
+          setError(err);
+          setLoading(false);
+        } else {
+          router.push(redirect);
+        }
       } else {
-        router.push(redirect);
+        const { error: err } = await signUp(email, password, fullName);
+        if (err) {
+          setError(err);
+          setLoading(false);
+        } else {
+          setError(null);
+          setMode('login');
+          setLoading(false);
+        }
       }
-    } else {
-      const { error: err } = await signUp(email, password, fullName);
-      if (err) {
-        setError(err);
-        setLoading(false);
-      } else {
-        setError(null);
-        setMode('login');
-        setLoading(false);
-      }
+    } catch (err) {
+      console.error('Auth form error:', err);
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setLoading(false);
     }
   };
 

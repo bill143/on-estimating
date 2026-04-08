@@ -5,17 +5,15 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "build": "tsc",
-    "lint": "tsc --noEmit",
-    "migrate": "echo 'Run Supabase migrations via CLI'",
-    "seed": "tsx src/seed.ts"
+    "generate": "prisma generate --schema=./prisma/schema.prisma",
+    "studio": "prisma studio --schema=./prisma/schema.prisma"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.47.0",
-    "zod": "^3.24.0"
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
   }
 }

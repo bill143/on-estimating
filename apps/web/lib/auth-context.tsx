@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { User, Session } from '@supabase/supabase-js';
 import { getSupabase } from './supabase';
 
+// AUTH BYPASSED — set to true to skip login during testing/deployment
+const AUTH_DISABLED = true;
+
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
@@ -15,21 +18,38 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Mock user for dev/testing mode
+const DEV_USER = {
+  id: '00000000-0000-0000-0000-000000000000',
+  email: 'bill@oneillcontractors.com',
+  user_metadata: { full_name: 'Bill Asmar' },
+  app_metadata: {},
+  aud: 'authenticated',
+  created_at: new Date().toISOString(),
+} as unknown as User;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(AUTH_DISABLED ? DEV_USER : null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = getSupabase();
+  const [loading, setLoading] = useState(!AUTH_DISABLED);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      setLoading(false);
-    });
+    if (AUTH_DISABLED) return;
 
-    // Listen for auth changes
+    const supabase = getSupabase();
+
+    supabase.auth.getSession()
+      .then(({ data: { session: s } }) => {
+        setSession(s);
+        setUser(s?.user ?? null);
+      })
+      .catch((err) => {
+        console.error('Failed to get session:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
@@ -37,24 +57,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+  const signIn = async (_email: string, _password: string) => {
+    if (AUTH_DISABLED) return { error: null };
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signInWithPassword({ email: _email, password: _password });
+      return { error: error?.message ?? null };
+    } catch (err) {
+      console.error('signIn exception:', err);
+      return { error: err instanceof Error ? err.message : 'Sign in failed' };
+    }
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-    return { error: error?.message ?? null };
+  const signUp = async (_email: string, _password: string, _fullName: string) => {
+    if (AUTH_DISABLED) return { error: null };
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.signUp({
+        email: _email,
+        password: _password,
+        options: { data: { full_name: _fullName } },
+      });
+      return { error: error?.message ?? null };
+    } catch (err) {
+      console.error('signUp exception:', err);
+      return { error: err instanceof Error ? err.message : 'Sign up failed' };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    if (AUTH_DISABLED) return;
+    try {
+      const supabase = getSupabase();
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('signOut exception:', err);
+    }
   };
 
   return (

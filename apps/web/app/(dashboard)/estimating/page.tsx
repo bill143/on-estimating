@@ -1,14 +1,43 @@
 'use client';
 
-import { useEffect } from 'react';
-import { FileSpreadsheet, Download, Printer } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  FileSpreadsheet,
+  Download,
+  Printer,
+  ClipboardList,
+  Settings2,
+  DollarSign,
+  Calculator,
+  BarChart3,
+  Layers,
+  Users,
+} from 'lucide-react';
 import { useEstimateStore } from '@/lib/estimate-store';
-import { EstimateHeader } from '@/components/estimating/EstimateHeader';
-import { EstimateGrid } from '@/components/estimating/EstimateGrid';
-import { EstimateSummary } from '@/components/estimating/EstimateSummary';
+import { formatCurrencyDetailed, cn } from '@/lib/utils';
+import { BaseBidTab } from '@/components/estimating/tabs/BaseBidTab';
+import { OptionsTab } from '@/components/estimating/tabs/OptionsTab';
+import { GenRequirementsTab } from '@/components/estimating/tabs/GenRequirementsTab';
+import { GenConditionsTab } from '@/components/estimating/tabs/GenConditionsTab';
+import { OHPTab } from '@/components/estimating/tabs/OHPTab';
+import { TotalCostSummaryTab } from '@/components/estimating/tabs/TotalCostSummaryTab';
+import { SubBidGridTab } from '@/components/estimating/tabs/SubBidGridTab';
+
+type TabId = 'base-bid' | 'options' | 'gen-requirements' | 'gen-conditions' | 'ohp' | 'sub-bids' | 'total-summary';
+
+const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
+  { id: 'base-bid', label: 'Base Bid', icon: ClipboardList },
+  { id: 'options', label: 'Options', icon: Layers },
+  { id: 'gen-requirements', label: 'Gen. Requirements', icon: Settings2 },
+  { id: 'gen-conditions', label: 'Gen. Conditions', icon: DollarSign },
+  { id: 'ohp', label: 'OH&P', icon: Calculator },
+  { id: 'sub-bids', label: 'Sub Bids', icon: Users },
+  { id: 'total-summary', label: 'Total Cost Summary', icon: BarChart3 },
+];
 
 export default function EstimatingPage() {
-  const { header, rows, loadDemoEstimate } = useEstimateStore();
+  const { rows, grandTotal, loadDemoEstimate } = useEstimateStore();
+  const [activeTab, setActiveTab] = useState<TabId>('base-bid');
 
   useEffect(() => {
     if (rows.length === 0) {
@@ -19,7 +48,7 @@ export default function EstimatingPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Top Bar */}
-      <div className="border-b border-gray-200 bg-white px-6 py-3">
+      <div className="border-b border-gray-200 bg-white px-6 py-3 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50">
@@ -32,12 +61,57 @@ export default function EstimatingPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50">
+          <div className="flex items-center gap-4">
+            <div className="text-right mr-2">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Grand Total</p>
+              <p className="text-lg font-black tabular-nums text-gray-900">
+                {formatCurrencyDetailed(grandTotal)}
+              </p>
+            </div>
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            >
               <Printer className="h-3.5 w-3.5" />
               Print
             </button>
-            <button className="flex items-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-xs font-medium text-white hover:bg-brand-700 shadow-sm">
+            <button
+              onClick={() => {
+                const storeRows = useEstimateStore.getState().rows;
+                const headers = 'SR#,Sheet,Detail,CSI,Description,QTY,Waste%,QTY W/W,Unit,Mat$/U,Lab$/U,Eq$/U,Tot$/U,Total Cost';
+                const csvRows = storeRows
+                  .filter((r) => r.rowType === 'line_item')
+                  .map((r) =>
+                    [
+                      r.srNo,
+                      r.sheetNo,
+                      r.detailNo,
+                      r.csiCode,
+                      `"${r.description.replace(/"/g, '""')}"`,
+                      r.qty,
+                      r.wastePercent,
+                      r.qtyWithWaste,
+                      r.unit,
+                      r.materialUnitCost,
+                      r.laborUnitCost,
+                      r.equipmentUnitCost,
+                      r.totalUnitCost,
+                      r.totalCost,
+                    ].join(',')
+                  );
+                const csv = [headers, ...csvRows].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'estimate-export.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+              }}
+              className="flex items-center gap-2 rounded-lg bg-brand-600 px-3 py-2 text-xs font-medium text-white hover:bg-brand-700 shadow-sm"
+            >
               <Download className="h-3.5 w-3.5" />
               Export CSV
             </button>
@@ -45,18 +119,39 @@ export default function EstimatingPage() {
         </div>
       </div>
 
-      {/* Body */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Header Block */}
-        <EstimateHeader />
-
-        {/* Grid + Summary Side-by-Side */}
-        <div className="flex gap-6">
-          <div className="flex-1 min-w-0 overflow-x-auto">
-            <EstimateGrid />
-          </div>
-          <EstimateSummary />
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 bg-white px-6 shrink-0">
+        <div className="flex items-center gap-0">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors',
+                  activeTab === tab.id
+                    ? 'border-brand-600 text-brand-700 bg-brand-50/50'
+                    : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
+      </div>
+
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {activeTab === 'base-bid' && <BaseBidTab />}
+        {activeTab === 'options' && <OptionsTab />}
+        {activeTab === 'gen-requirements' && <GenRequirementsTab />}
+        {activeTab === 'gen-conditions' && <GenConditionsTab />}
+        {activeTab === 'ohp' && <OHPTab />}
+        {activeTab === 'sub-bids' && <SubBidGridTab />}
+        {activeTab === 'total-summary' && <TotalCostSummaryTab />}
       </div>
     </div>
   );

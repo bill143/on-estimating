@@ -1,14 +1,13 @@
 'use client';
 
 import { getSupabase } from './supabase';
-import type { EstimateRow, EstimateHeader, Alternate, RowType } from './estimate-store';
+import type { EstimateRow, EstimateHeader, RowType } from './estimate-store';
 
 // ─── Save entire estimate to Supabase ────────────────────────────────────
 export async function saveEstimateToDb(
   estimateId: string,
   header: EstimateHeader,
   rows: EstimateRow[],
-  alternates: Alternate[],
   overheadPercent: number,
   profitPercent: number,
   totalBaseBid: number
@@ -43,6 +42,7 @@ export async function saveEstimateToDb(
     waste_percent: row.wastePercent,
     material_unit_cost: row.materialUnitCost,
     labor_unit_cost: row.laborUnitCost,
+    equipment_unit_cost: row.equipmentUnitCost,
     total_cost: row.totalCost,
     sort_order: idx,
     parent_id: row.parentId,
@@ -56,21 +56,7 @@ export async function saveEstimateToDb(
     if (liErr) throw new Error(`Line items save failed: ${(liErr as { message: string }).message}`);
   }
 
-  // 3. Upsert alternates
-  await supabase.from('alternates').delete().eq('estimate_id', estimateId);
-  if (alternates.length > 0) {
-    const altPayloads = alternates.map((alt, idx) => ({
-      id: alt.id,
-      estimate_id: estimateId,
-      name: alt.name,
-      description: alt.description,
-      amount: alt.amount,
-      sort_order: idx,
-    }));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: altErr } = await (supabase.from('alternates') as any).insert(altPayloads);
-    if (altErr) throw new Error(`Alternates save failed: ${(altErr as { message: string }).message}`);
-  }
+  // TODO: Save options, gen requirements, gen conditions to their respective tables
 }
 
 // ─── Load estimate from Supabase ─────────────────────────────────────────
@@ -95,13 +81,6 @@ export async function loadEstimateFromDb(estimateId: string) {
 
   if (liErr) throw new Error(`Line items load failed: ${liErr.message}`);
 
-  // Fetch alternates — table may not exist in older schemas, handle gracefully
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: alts, error: altErr } = await (supabase.from('alternates') as any)
-    .select('*')
-    .eq('estimate_id', estimateId)
-    .order('sort_order', { ascending: true });
-
   // Map to store types
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows: EstimateRow[] = (items ?? []).map((item: any) => ({
@@ -120,18 +99,14 @@ export async function loadEstimateFromDb(estimateId: string) {
     unit: item.unit,
     materialUnitCost: Number(item.material_unit_cost ?? 0),
     laborUnitCost: Number(item.labor_unit_cost ?? 0),
+    equipmentUnitCost: Number(item.equipment_unit_cost ?? 0),
     totalUnitCost: 0,
     totalCost: Number(item.total_cost ?? 0),
     subTotal: 0,
+    materialSubTotal: 0,
+    laborSubTotal: 0,
+    equipmentSubTotal: 0,
     isExpanded: true,
-  }));
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const alternates: Alternate[] = (!altErr && alts ? alts : []).map((a: any) => ({
-    id: a.id,
-    name: a.name,
-    description: a.description,
-    amount: Number(a.amount),
   }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,7 +118,6 @@ export async function loadEstimateFromDb(estimateId: string) {
       profitPercent: Number(estData.profit_percent ?? 10),
     },
     rows,
-    alternates,
   };
 }
 

@@ -1,0 +1,484 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+
+  extensions = [vector, uuid_ossp(map: "uuid-ossp")]
+}
+
+// ============================================
+// AUTH & ORGANIZATION
+// ============================================
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?  @map("logo_url")
+  settings  Json?    @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members          OrgMember[]
+  projects         Project[]
+  costCodes        CostCode[]
+  estimates        Estimate[]
+  auditLogs        AuditLog[]
+  assemblies       Assembly[]
+  subcontractors   Subcontractor[]
+  agentConversations AgentConversation[]
+
+  @@map("organizations")
+}
+
+model OrgMember {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  role           OrgRole  @default(MEMBER)
+  displayName    String?  @map("display_name")
+  avatarUrl      String?  @map("avatar_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("org_members")
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  SENIOR_ESTIMATOR
+  ESTIMATOR
+  PROJECT_MANAGER
+  SUBCONTRACTOR
+  MEMBER
+  VIEWER
+}
+
+// ============================================
+// PROJECTS & PLANS
+// ============================================
+
+model Project {
+  id             String        @id @default(uuid())
+  organizationId String        @map("organization_id")
+  name           String
+  number         String?
+  description    String?
+  address        String?
+  city           String?
+  state          String?
+  zipCode        String?       @map("zip_code")
+  clientName     String?       @map("client_name")
+  status         ProjectStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  planSets     PlanSet[]
+  plans        Plan[]
+  estimates    Estimate[]
+
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  COMPLETED
+  ON_HOLD
+}
+
+model PlanSet {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  name        String
+  version     String   @default("1.0")
+  description String?
+  uploadedBy  String   @map("uploaded_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  project Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pages   PlanPage[]
+
+  @@map("plan_sets")
+}
+
+model PlanPage {
+  id              String          @id @default(uuid())
+  planSetId       String          @map("plan_set_id")
+  pageNumber      Int             @map("page_number")
+  fileName        String          @map("file_name")
+  storagePath     String          @map("storage_path")
+  thumbnailPath   String?         @map("thumbnail_path")
+  width           Int?
+  height          Int?
+  dpi             Int?
+  ocrText         String?         @map("ocr_text")
+  ocrConfidence   Float?          @map("ocr_confidence")
+  processingState ProcessingState @default(PENDING) @map("processing_state")
+  processedAt     DateTime?       @map("processed_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  planSet   PlanSet    @relation(fields: [planSetId], references: [id], onDelete: Cascade)
+  takeoffs  Takeoff[]
+
+  @@unique([planSetId, pageNumber])
+  @@map("plan_pages")
+}
+
+enum ProcessingState {
+  PENDING
+  UPLOADING
+  PROCESSING
+  OCR_COMPLETE
+  AI_DETECTED
+  COMPLETE
+  FAILED
+}
+
+// ============================================
+// TAKEOFFS & MEASUREMENTS
+// ============================================
+
+model Takeoff {
+  id            String      @id @default(uuid())
+  planPageId    String      @map("plan_page_id")
+  estimateId    String?     @map("estimate_id")
+  name          String
+  type          TakeoffType
+  data          Json
+  quantity      Decimal     @db.Decimal(18, 4)
+  unit          String
+  color         String?
+  notes         String?
+  createdBy     String      @map("created_by")
+  isAiGenerated Boolean     @default(false) @map("is_ai_generated")
+  confidence    Float?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  planPage  PlanPage  @relation(fields: [planPageId], references: [id], onDelete: Cascade)
+  estimate  Estimate? @relation(fields: [estimateId], references: [id])
+  lineItems EstimateLineItem[]
+
+  @@map("takeoffs")
+}
+
+enum TakeoffType {
+  AREA
+  LINEAR
+  COUNT
+  VOLUME
+}
+
+// ============================================
+// ESTIMATES, VERSIONS & COST DATABASE
+// ============================================
+
+model CostCode {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  code           String
+  description    String
+  category       String?
+  csiDivision    String?  @map("csi_division")
+  unitCost       Decimal  @map("unit_cost") @db.Decimal(18, 4)
+  unit           String
+  laborRate      Decimal? @map("labor_rate") @db.Decimal(18, 4)
+  materialRate   Decimal? @map("material_rate") @db.Decimal(18, 4)
+  equipmentRate  Decimal? @map("equipment_rate") @db.Decimal(18, 4)
+  subRate        Decimal? @map("sub_rate") @db.Decimal(18, 4)
+  otherRate      Decimal? @map("other_rate") @db.Decimal(18, 4)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lineItems    EstimateLineItem[]
+  assemblyItems AssemblyItem[]
+
+  @@unique([organizationId, code])
+  @@map("cost_codes")
+}
+
+model Estimate {
+  id             String         @id @default(uuid())
+  organizationId String         @map("organization_id")
+  projectId      String         @map("project_id")
+  name           String
+  version        String         @default("1.0")
+  status         EstimateStatus @default(DRAFT)
+  subtotal       Decimal        @default(0) @db.Decimal(18, 2)
+  overhead       Decimal        @default(0) @db.Decimal(18, 2)
+  profit         Decimal        @default(0) @db.Decimal(18, 2)
+  tax            Decimal        @default(0) @db.Decimal(18, 2)
+  total          Decimal        @default(0) @db.Decimal(18, 2)
+  overheadPct    Decimal        @default(10) @map("overhead_pct") @db.Decimal(5, 2)
+  profitPct      Decimal        @default(10) @map("profit_pct") @db.Decimal(5, 2)
+  taxPct         Decimal        @default(0) @map("tax_pct") @db.Decimal(5, 2)
+  notes          String?
+  createdBy      String         @map("created_by")
+  approvedBy     String?        @map("approved_by")
+  approvedAt     DateTime?      @map("approved_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  lineItems    EstimateLineItem[]
+  takeoffs     Takeoff[]
+  versions     EstimateVersion[]
+
+  @@map("estimates")
+}
+
+enum EstimateStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  SUBMITTED
+  REJECTED
+  WON
+  LOST
+  REVISED
+}
+
+model EstimateVersion {
+  id          String   @id @default(uuid())
+  estimateId  String   @map("estimate_id")
+  version     String
+  label       String?
+  snapshot    Json
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  estimate Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+
+  @@map("estimate_versions")
+}
+
+model EstimateLineItem {
+  id          String  @id @default(uuid())
+  estimateId  String  @map("estimate_id")
+  takeoffId   String? @map("takeoff_id")
+  costCodeId  String? @map("cost_code_id")
+  description String
+  quantity    Decimal @db.Decimal(18, 4)
+  unit        String
+  unitCost    Decimal @map("unit_cost") @db.Decimal(18, 4)
+  laborCost   Decimal @default(0) @map("labor_cost") @db.Decimal(18, 2)
+  materialCost Decimal @default(0) @map("material_cost") @db.Decimal(18, 2)
+  equipmentCost Decimal @default(0) @map("equipment_cost") @db.Decimal(18, 2)
+  subCost     Decimal @default(0) @map("sub_cost") @db.Decimal(18, 2)
+  otherCost   Decimal @default(0) @map("other_cost") @db.Decimal(18, 2)
+  totalCost   Decimal @map("total_cost") @db.Decimal(18, 2)
+  sortOrder   Int     @default(0) @map("sort_order")
+  isLocked    Boolean @default(false) @map("is_locked")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  estimate Estimate  @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  takeoff  Takeoff?  @relation(fields: [takeoffId], references: [id])
+  costCode CostCode? @relation(fields: [costCodeId], references: [id])
+
+  @@map("estimate_line_items")
+}
+
+// ============================================
+// ASSEMBLIES (Source: APEX BUILDCORE)
+// ============================================
+
+model Assembly {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  name           String
+  code           String
+  description    String?
+  category       String?
+  parametricInputs Json?  @map("parametric_inputs")
+  parentId       String?  @map("parent_id")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent       Assembly?      @relation("AssemblyNesting", fields: [parentId], references: [id])
+  children     Assembly[]     @relation("AssemblyNesting")
+  items        AssemblyItem[]
+
+  @@unique([organizationId, code])
+  @@map("assemblies")
+}
+
+model AssemblyItem {
+  id          String  @id @default(uuid())
+  assemblyId  String  @map("assembly_id")
+  costCodeId  String  @map("cost_code_id")
+  formula     String?
+  quantity    Decimal @default(1) @db.Decimal(18, 4)
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  assembly Assembly @relation(fields: [assemblyId], references: [id], onDelete: Cascade)
+  costCode CostCode @relation(fields: [costCodeId], references: [id])
+
+  @@map("assembly_items")
+}
+
+// ============================================
+// SUBCONTRACTORS & BIDS
+// ============================================
+
+model Subcontractor {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  companyName    String   @map("company_name")
+  contactName    String?  @map("contact_name")
+  email          String?
+  phone          String?
+  tradeCodes     String[] @map("trade_codes")
+  serviceArea    Json?    @map("service_area")
+  certifications String[]
+  coiExpiration  DateTime? @map("coi_expiration")
+  coiStoragePath String?  @map("coi_storage_path")
+  bondCapacity   Decimal? @map("bond_capacity") @db.Decimal(18, 2)
+  performanceScore Float? @map("performance_score")
+  isPrequalified Boolean  @default(false) @map("is_prequalified")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bids         Bid[]
+
+  @@map("subcontractors")
+}
+
+model Bid {
+  id               String    @id @default(uuid())
+  subcontractorId  String    @map("subcontractor_id")
+  projectId        String?   @map("project_id")
+  estimateId       String?   @map("estimate_id")
+  tradeCode        String    @map("trade_code")
+  amount           Decimal   @db.Decimal(18, 2)
+  inclusions       String[]
+  exclusions       String[]
+  alternates       Json?
+  qualifications   String?
+  submittedAt      DateTime? @map("submitted_at")
+  expiresAt        DateTime? @map("expires_at")
+  status           BidStatus @default(PENDING)
+  aiExtractedData  Json?     @map("ai_extracted_data")
+  aiConfidence     Float?    @map("ai_confidence")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  subcontractor Subcontractor @relation(fields: [subcontractorId], references: [id], onDelete: Cascade)
+
+  @@map("bids")
+}
+
+enum BidStatus {
+  PENDING
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+// ============================================
+// AGENTIC AI ORCHESTRATOR
+// ============================================
+
+model AgentConversation {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  title          String?
+  context        Json?
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  messages     AgentMessage[]
+
+  @@map("agent_conversations")
+}
+
+model AgentMessage {
+  id             String   @id @default(uuid())
+  conversationId String   @map("conversation_id")
+  role           MessageRole
+  content        String
+  agentDomain    String?  @map("agent_domain")
+  toolCalls      Json?    @map("tool_calls")
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("agent_messages")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+// ============================================
+// PLANS (Standalone uploads via plan-upload.ts)
+// ============================================
+
+model Plan {
+  id           String   @id
+  projectId    String   @map("project_id")
+  fileName     String   @map("file_name")
+  fileSize     Int      @map("file_size")
+  fileType     String   @map("file_type")
+  pageCount    Int      @default(1) @map("page_count")
+  uploadedBy   String   @map("uploaded_by")
+  storagePath  String   @map("storage_path")
+  metadata     Json?
+  disciplines  String[]
+  tags         String[]
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("plans")
+}
+
+// ============================================
+// AUDIT LOG (Immutable)
+// ============================================
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  action         String
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id")
+  changes        Json?
+  ipAddress      String?  @map("ip_address")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

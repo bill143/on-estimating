@@ -25,9 +25,9 @@ import { formatCurrencyDetailed } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 // ─── Column Template ─────────────────────────────────────────────────────
-// 14 columns: SR# | Sheet | Detail | CSI | Description | QTY | WASTE% | QTY W/W | UNIT | Mat$/U | Lab$/U | Tot$/U | TotCost | SubTotals
+// 16 columns: SR# | Sheet | Detail | CSI | Description | QTY | WASTE% | QTY W/W | UNIT | Mat$/U | Lab$/U | Eq$/U | Tot$/U | TotCost | SubTotals | Actions
 const COL_TEMPLATE =
-  'grid-cols-[48px_64px_64px_80px_1fr_72px_56px_80px_56px_88px_88px_88px_100px_100px_36px]';
+  'grid-cols-[44px_60px_60px_76px_1fr_68px_52px_76px_52px_80px_80px_80px_80px_96px_96px_32px]';
 
 // ─── Main Grid Component ─────────────────────────────────────────────────
 export function EstimateGrid() {
@@ -54,6 +54,7 @@ export function EstimateGrid() {
         <ColHeader label="Unit" align="center" />
         <ColHeader label="Mat $/U" align="right" />
         <ColHeader label="Lab $/U" align="right" />
+        <ColHeader label="Eq $/U" align="right" />
         <ColHeader label="Tot $/U" align="right" />
         <ColHeader label="Total Cost" align="right" />
         <ColHeader label="Sub Totals" align="right" />
@@ -185,10 +186,23 @@ function DivisionHeaderRow({
         <div className="border-l border-gray-700" />
         <div className="border-l border-gray-700" />
         <div className="border-l border-gray-700" />
+        {/* Material subtotal */}
+        <div className="border-l border-gray-700 px-2 py-2 text-right text-[10px] font-semibold text-blue-300 tabular-nums">
+          {row.materialSubTotal > 0 ? formatCurrencyDetailed(row.materialSubTotal) : ''}
+        </div>
+        {/* Labor subtotal */}
+        <div className="border-l border-gray-700 px-2 py-2 text-right text-[10px] font-semibold text-amber-300 tabular-nums">
+          {row.laborSubTotal > 0 ? formatCurrencyDetailed(row.laborSubTotal) : ''}
+        </div>
+        {/* Equipment subtotal */}
+        <div className="border-l border-gray-700 px-2 py-2 text-right text-[10px] font-semibold text-cyan-300 tabular-nums">
+          {row.equipmentSubTotal > 0 ? formatCurrencyDetailed(row.equipmentSubTotal) : ''}
+        </div>
         <div className="border-l border-gray-700" />
-        <div className="border-l border-gray-700" />
-        <div className="border-l border-gray-700" />
-        <div className="border-l border-gray-700" />
+        {/* Total Cost */}
+        <div className="border-l border-gray-700 px-2 py-2 text-right text-xs font-bold text-white tabular-nums">
+          {row.subTotal > 0 ? formatCurrencyDetailed(row.subTotal) : ''}
+        </div>
         {/* Sub Totals */}
         <div className="border-l border-gray-700 px-2 py-2 text-right text-xs font-bold text-emerald-400 tabular-nums">
           {row.subTotal > 0 ? formatCurrencyDetailed(row.subTotal) : ''}
@@ -255,6 +269,7 @@ function SubsectionHeaderRow({
         <div className="border-l border-blue-100" />
         <div className="border-l border-blue-100" />
         <div className="border-l border-blue-100" />
+        <div className="border-l border-blue-100" />
         <div className="border-l border-blue-100 flex items-center justify-center">
           <button onClick={onRemove} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all">
             <Trash2 className="h-3 w-3" />
@@ -293,6 +308,7 @@ function ItemNoteRow({
             placeholder="Enter note..."
           />
         </div>
+        <div className="border-l border-amber-100" />
         <div className="border-l border-amber-100" />
         <div className="border-l border-amber-100" />
         <div className="border-l border-amber-100" />
@@ -387,17 +403,20 @@ function LineItemRow({
         {/* Col 11: Labor $/Unit */}
         <CellCurrency value={row.laborUnitCost} onChange={(v) => onUpdate({ laborUnitCost: v })} />
 
-        {/* Col 12: Total Unit Cost (computed) */}
+        {/* Col 12: Equipment $/Unit */}
+        <CellCurrency value={row.equipmentUnitCost} onChange={(v) => onUpdate({ equipmentUnitCost: v })} />
+
+        {/* Col 13: Total Unit Cost (computed) */}
         <div className="border-l border-gray-100 px-2 py-1.5 text-right tabular-nums font-medium text-gray-700 bg-gray-50/50">
           {row.totalUnitCost > 0 ? formatCurrencyDetailed(row.totalUnitCost) : ''}
         </div>
 
-        {/* Col 13: Total Cost (computed) */}
+        {/* Col 14: Total Cost (computed) */}
         <div className="border-l border-gray-100 px-2 py-1.5 text-right tabular-nums font-semibold text-gray-900 bg-gray-50/50">
           {row.totalCost > 0 ? formatCurrencyDetailed(row.totalCost) : ''}
         </div>
 
-        {/* Col 14: Sub Totals (empty for line items) */}
+        {/* Col 15: Sub Totals (empty for line items) */}
         <div className="border-l border-gray-100" />
 
         {/* Actions */}
@@ -426,6 +445,7 @@ function SubtotalRow({ row, onRemove }: { row: EstimateRow; onRemove: () => void
         <div className="border-l border-emerald-100 px-2 py-2">
           <span className="text-xs font-bold text-emerald-800">{row.description || 'Section Subtotal'}</span>
         </div>
+        <div className="border-l border-emerald-100" />
         <div className="border-l border-emerald-100" />
         <div className="border-l border-emerald-100" />
         <div className="border-l border-emerald-100" />
