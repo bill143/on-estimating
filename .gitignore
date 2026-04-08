@@ -34,3 +34,6 @@ pnpm-debug.log*
 
 # Supabase
 supabase/.temp/
+
+desktop.ini
+*.ini
