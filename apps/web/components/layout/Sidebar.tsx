@@ -37,14 +37,13 @@ const navSections: NavSection[] = [
       { href: '/projects', label: 'Projects', icon: FolderOpen },
       { href: '/estimating', label: 'Estimating', icon: Calculator },
       { href: '/takeoff', label: 'Plan Takeoff', icon: ScanLine },
-    { href: '/takeoff', label: 'Plan Takeoff', icon: ScanLine },
     ],
   },
   {
     label: 'Intelligence',
     items: [
       { href: '/predictions', label: 'Cost Predictions', icon: Brain },
-      { href: '/auto-count', label: 'Auto-Count', icon: ScanLine },
+      { href: '/auto-count', label: 'Auto-Count', icon: Scan },
       { href: '/bid-sniper', label: 'Bid Sniper', icon: Crosshair, badge: '2' },
     ],
   },
