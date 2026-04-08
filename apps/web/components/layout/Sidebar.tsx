@@ -19,7 +19,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
-} from 'lucide-react';
+, ScanLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
 
@@ -36,6 +36,7 @@ const navSections: NavSection[] = [
       { href: '/pipeline', label: 'Bid Pipeline', icon: Kanban },
       { href: '/projects', label: 'Projects', icon: FolderOpen },
       { href: '/estimating', label: 'Estimating', icon: Calculator },
+    { href: '/takeoff', label: 'Plan Takeoff', icon: ScanLine },
     ],
   },
   {
