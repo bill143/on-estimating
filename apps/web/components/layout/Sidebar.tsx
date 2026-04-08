@@ -36,6 +36,7 @@ const navSections: NavSection[] = [
       { href: '/pipeline', label: 'Bid Pipeline', icon: Kanban },
       { href: '/projects', label: 'Projects', icon: FolderOpen },
       { href: '/estimating', label: 'Estimating', icon: Calculator },
+      { href: '/takeoff', label: 'Plan Takeoff', icon: ScanLine },
     { href: '/takeoff', label: 'Plan Takeoff', icon: ScanLine },
     ],
   },
