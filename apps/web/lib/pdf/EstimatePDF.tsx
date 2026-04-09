@@ -1,6 +1,45 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
-import type { Estimate, EstimateLineItem, Project } from '@/types';
-import type { ExportTemplateSettings, ComplianceSettings } from '@/types/settings';
+import type { ExportTemplateSettings, ComplianceSettings } from '@/lib/settings-types';
+
+// PDF-specific types (subset of full estimate types)
+interface EstimateLineItem {
+  id: string;
+  csiCode: string;
+  csiDivision: string;
+  description: string;
+  quantity: number;
+  unit: string;
+  laborRate: number;
+  materialRate: number;
+  laborTotal: number;
+  materialTotal: number;
+  total: number;
+}
+
+interface Estimate {
+  name: string;
+  status: string;
+  updatedAt: string;
+  totalAmount: number;
+  subtotal: number;
+  lineItems: EstimateLineItem[];
+  overheadPct: number;
+  overhead: number;
+  profitPct: number;
+  profit: number;
+  bondRate: number;
+  bondTotal: number;
+  discount?: { type: string; amount: number; value: number; label?: string };
+  aiConfidence?: number;
+}
+
+interface Project {
+  name: string;
+  agency: string;
+  solicitation: string;
+  setAside: string;
+  location: string;
+}
 
 // ── Props ───────────────────────────────
 

@@ -1,4 +1,4 @@
-'''use client''';
+'use client';
 
 import { useEchoStore } from '@/lib/echo-store';
 import { Input } from '@/components/ui/input';

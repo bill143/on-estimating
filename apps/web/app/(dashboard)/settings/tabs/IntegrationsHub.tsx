@@ -1,4 +1,4 @@
-'''use client''';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import {
@@ -29,7 +29,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useSettingsStore } from '@/lib/settings-store';
 import { isSupabaseConfigured } from '@/lib/supabase';
-import { useIntegrationTest } from '@/hooks/useIntegrationTest';
+import { useIntegrationTest } from '@/lib/hooks/useIntegrationTest';
 import toast from 'react-hot-toast';
 import type {
   Integration,

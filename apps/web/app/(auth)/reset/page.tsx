@@ -12,10 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { HardHat, Loader2, CheckCircle } from 'lucide-react';
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+function getSupabase() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+}
 
 const resetSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -36,7 +38,7 @@ export default function ResetPasswordPage() {
 
   const onSubmit = async (data: ResetForm) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      const { error } = await getSupabase().auth.resetPasswordForEmail(data.email, {
         redirectTo: window.location.origin + '/update-password',
       });
       if (error) throw error;

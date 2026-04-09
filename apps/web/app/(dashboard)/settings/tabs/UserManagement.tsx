@@ -1,4 +1,4 @@
-'''use client''';
+'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import {
@@ -350,7 +350,7 @@ export default function UserManagement() {
                     <td className="py-3 pr-4">
                       <span className="flex items-center gap-1 text-zinc-500 text-xs">
                         <Clock className="w-3.5 h-3.5" />
-                        {relativeTime(user.lastActive)}
+                        {relativeTime(user.lastActive || '')}
                       </span>
                     </td>
                     <td className="py-3 text-right">

@@ -1,5 +1,61 @@
 // ── Settings Module Types ─────────────────
 
+export type Verbosity = 'concise' | 'detailed' | 'verbose' | 'expert' | string;
+export type ClaudeModel = string;
+export type GPT4oModel = string;
+
+// ── Additional types used by settings tabs ──
+
+export type PlanTier = 'starter' | 'professional' | 'enterprise' | string;
+
+export interface Invoice {
+  id: string;
+  date: string;
+  amount: number;
+  status: 'paid' | 'pending' | 'overdue';
+  downloadUrl: string;
+}
+
+export type NotificationEvent = string;
+export type NotificationChannel = 'in-app' | 'email' | 'slack';
+
+export interface InsuranceCert {
+  id: string;
+  type?: string;
+  name?: string;
+  carrier?: string;
+  policyNumber?: string;
+  expiryDate: string;
+  coverageAmount?: number;
+  fileUrl?: string;
+  [key: string]: unknown;
+}
+
+export interface CSIDivision {
+  code: string;
+  name: string;
+  enabled: boolean;
+}
+
+export type UserRole = 'super_admin' | 'org_admin' | 'estimator' | 'project_manager' | 'subcontractor' | 'viewer' | string;
+export type Permission = 'takeoff' | 'estimates' | 'bid-tracking' | 'plan-chat' | 'settings' | 'reports' | 'exports' | string;
+
+export type IntegrationCategory = 'ai' | 'database' | 'storage' | 'email' | 'project-management' | 'crm' | 'measurement' | 'accounting' | string;
+export type ConnectionStatus = 'connected' | 'disconnected' | 'error' | 'pending' | 'testing' | string;
+
+export interface IntegrationField {
+  key: string;
+  label: string;
+  type: 'text' | 'password' | 'url' | 'select' | 'toggle' | string;
+  placeholder?: string;
+  required?: boolean;
+  options?: { value: string; label: string }[];
+  value?: string | number | boolean;
+  [k: string]: unknown;
+}
+
+// ── Core Settings Types ───────────────────
+
 export type SettingsTab =
   | 'organization'
   | 'user-management'
@@ -14,15 +70,23 @@ export type SettingsTab =
 export interface Integration {
   id: string;
   name: string;
-  provider: string;
-  status: 'connected' | 'disconnected' | 'error';
-  enabled: boolean;
+  provider?: string;
+  status: ConnectionStatus;
+  enabled?: boolean;
   config?: Record<string, unknown>;
   connectedAt?: string;
+  category: IntegrationCategory;
+  description: string;
+  icon?: string;
+  fields: IntegrationField[];
+  lastSync?: string;
+  docsUrl?: string;
+  color?: string;
+  errorMessage?: string;
 }
 
 export interface AIConfig {
-  primaryEngine: 'claude' | 'openai';
+  primaryEngine: string;
   claudeModel: string;
   gpt4oModel: string;
   claudeApiKey: string;
@@ -51,10 +115,15 @@ export interface OrganizationProfile {
   naicsCodes: string[];
   primaryNaics: string;
   bonding: { singleJobLimit: number; aggregateLimit: number };
-  insuranceCerts: unknown[];
+  insuranceCerts: InsuranceCert[];
   federalAgencies: string[];
   pastPerformanceByAgency: Record<string, unknown>;
   serviceAreas: string[];
+  logoUrl?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  [key: string]: unknown;
 }
 
 export interface User {
@@ -62,10 +131,12 @@ export interface User {
   email: string;
   name: string;
   role: string;
-  status: 'active' | 'invited' | 'disabled';
+  status: 'active' | 'invited' | 'disabled' | string;
   avatar?: string;
-  joinedAt: string;
+  joinedAt?: string;
   lastActive?: string;
+  mfaEnabled?: boolean;
+  [key: string]: unknown;
 }
 
 export type RolePermissionMap = Record<string, Record<string, boolean>>;
@@ -73,7 +144,7 @@ export type RolePermissionMap = Record<string, Record<string, boolean>>;
 export interface SSOConfig {
   google: boolean;
   microsoft: boolean;
-  saml: { enabled: boolean; entityId?: string; ssoUrl?: string };
+  saml: { enabled: boolean; entityId?: string; ssoUrl?: string; entryPoint?: string; cert?: string; [key: string]: unknown };
 }
 
 export interface AuditLogEntry {
@@ -99,10 +170,10 @@ export interface NotificationSettings {
 }
 
 export type NotificationMatrix = Record<string, Record<string, boolean>>;
-export type EmailDigestFrequency = 'realtime' | 'daily' | 'weekly' | 'none';
+export type EmailDigestFrequency = 'realtime' | 'daily' | 'weekly' | 'none' | 'immediate' | string;
 
 export interface EstimatingPreferences {
-  csiDivisions: unknown[];
+  csiDivisions: CSIDivision[];
   laborRates: unknown[];
   materialCosts: unknown[];
   equipmentRates: unknown[];
@@ -131,9 +202,11 @@ export interface BillingInfo {
   seatsUsed: number;
   apiTokenUsage: { used: number; limit: number };
   features: Record<string, { used: number; limit: number }>;
-  invoices: unknown[];
+  invoices: Invoice[];
   nextBillingDate: string;
   monthlyAmount: number;
+  paymentMethod?: { type: string; last4: string; expiry: string };
+  [key: string]: unknown;
 }
 
 export interface ExportTemplateSettings {

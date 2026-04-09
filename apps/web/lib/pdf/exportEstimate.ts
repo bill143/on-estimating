@@ -2,7 +2,8 @@ import { pdf } from '@react-pdf/renderer';
 import { createElement } from 'react';
 import { EstimatePDF, type EstimatePDFProps } from './EstimatePDF';
 import { useSettingsStore } from '@/lib/settings-store';
-import type { Estimate, Project } from '@/types';
+type Estimate = EstimatePDFProps['estimate'];
+type Project = EstimatePDFProps['project'];
 
 export async function exportEstimatePDF(estimate: Estimate, project: Project): Promise<void> {
   const store = useSettingsStore.getState();

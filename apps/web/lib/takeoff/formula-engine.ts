@@ -22,8 +22,8 @@ export interface FormulaResult {
 }
 
 /** Whitelist of allowed mathjs functions for construction formulas */
-// @ts-expect-error Reserved for Phase 2 function whitelist enforcement
-const ALLOWED_FUNCTIONS = new Set([
+// Reserved for Phase 2 function whitelist enforcement
+const _ALLOWED_FUNCTIONS = new Set([
   'add', 'subtract', 'multiply', 'divide',
   'pow', 'sqrt', 'abs', 'ceil', 'floor', 'round',
   'min', 'max', 'sum',

@@ -85,9 +85,9 @@ export async function GET(request: NextRequest) {
 
     // Generate signed URLs for thumbnails
     const planSetsWithUrls = await Promise.all(
-      planSets.map(async (planSet) => {
+      planSets.map(async (planSet: any) => {
         const pagesWithUrls = await Promise.all(
-          planSet.pages.map(async (page) => {
+          planSet.pages.map(async (page: any) => {
             let signedUrl = null;
             if (page.thumbnailPath || page.storagePath) {
               const path = page.thumbnailPath || page.storagePath;

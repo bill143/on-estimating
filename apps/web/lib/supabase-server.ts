@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import type { Database } from '@on/db';
+// Database type will come from Supabase codegen; using any for now
+type Database = any;
+
+export const createServerSupabaseClient = createServerSupabase;
 
 export function createServerSupabase() {
   const cookieStore = cookies();
