@@ -19,7 +19,8 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
-, ScanLine } from 'lucide-react';
+  ScanLine,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
 
