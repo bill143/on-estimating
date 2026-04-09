@@ -5,7 +5,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import { getSupabase } from './supabase';
 
 // AUTH BYPASSED — set to true to skip login during testing/deployment
-const AUTH_DISABLED = true;
+const AUTH_DISABLED = false;
 
 interface AuthContextValue {
   user: User | null;
