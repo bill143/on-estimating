@@ -14,12 +14,14 @@ import {
   ClipboardCheck,
   Crosshair,
   ScanLine,
+  Scan,
   Settings,
   HardHat,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
-, ScanLine } from 'lucide-react';
+  BookOpen,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
 
@@ -42,6 +44,7 @@ const navSections: NavSection[] = [
   {
     label: 'Intelligence',
     items: [
+      { href: '/vault', label: 'The Vault', icon: BookOpen },
       { href: '/predictions', label: 'Cost Predictions', icon: Brain },
       { href: '/auto-count', label: 'Auto-Count', icon: Scan },
       { href: '/bid-sniper', label: 'Bid Sniper', icon: Crosshair, badge: '2' },

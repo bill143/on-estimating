@@ -4,6 +4,8 @@ import { AuthProvider } from '@/lib/auth-context';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ChatSidebar } from '@/components/ai/ChatSidebar';
 import { KeyboardShortcuts } from '@/components/system/KeyboardShortcuts';
+import { EchoOrb } from '@/components/echo/EchoOrb';
+import { EchoPanel } from '@/components/echo/EchoPanel';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -25,6 +27,8 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <ChatSidebar />
+            <EchoOrb />
+            <EchoPanel />
             <KeyboardShortcuts />
           </AuthProvider>
         </ThemeProvider>

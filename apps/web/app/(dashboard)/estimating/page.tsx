@@ -5,6 +5,7 @@ import {
   FileSpreadsheet,
   Download,
   Printer,
+  FileDown,
   ClipboardList,
   Settings2,
   DollarSign,
@@ -74,6 +75,37 @@ export default function EstimatingPage() {
             >
               <Printer className="h-3.5 w-3.5" />
               Print
+            </button>
+            <button
+              onClick={async () => {
+                const { exportEstimatePDF } = await import('@/lib/pdf/exportEstimate');
+                const store = useEstimateStore.getState();
+                // Build a minimal Estimate + Project shape for PDF export
+                const estimate = {
+                  name: 'Current Estimate',
+                  status: 'draft' as const,
+                  updatedAt: new Date().toISOString(),
+                  totalAmount: store.grandTotal,
+                  subtotal: store.grandTotal,
+                  lineItems: [],
+                  overheadPct: 0, overhead: 0,
+                  profitPct: 0, profit: 0,
+                  bondRate: 0, bondTotal: 0,
+                  discount: { type: 'none' as const, amount: 0, value: 0 },
+                };
+                const project = {
+                  name: 'Active Project',
+                  agency: '',
+                  solicitation: '',
+                  setAside: '',
+                  location: '',
+                };
+                await exportEstimatePDF(estimate as any, project as any);
+              }}
+              className="flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <FileDown className="h-3.5 w-3.5" />
+              Export PDF
             </button>
             <button
               onClick={() => {
