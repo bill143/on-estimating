@@ -4,10 +4,7 @@ import dynamic from 'next/dynamic';
 import { ScanLine } from 'lucide-react';
  
 const InteractivePlanViewer = dynamic(
-  () =>
-    import('@/components/takeoff/interactive-plan-viewer').then(
-      (mod) => mod.InteractivePlanViewer
-    ),
+  () => import('@/components/takeoff/interactive-plan-viewer'),
   {
     ssr: false,
     loading: () => (
@@ -34,12 +31,12 @@ export default function TakeoffPage() {
         <div>
           <h1 className="text-base font-semibold text-white">Plan Takeoff</h1>
           <p className="text-xs text-gray-500">
-            AI-powered quantity extraction · Annotate plans · Push to estimate
+            AI-powered quantity extraction - Annotate plans - Push to estimate
           </p>
         </div>
       </div>
       <div className="min-h-0 flex-1">
-        <InteractivePlanViewer />
+        <InteractivePlanViewer planUrl="" />
       </div>
     </div>
   );

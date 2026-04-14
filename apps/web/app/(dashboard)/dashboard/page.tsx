@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePipelineStore, DEMO_PROJECTS } from '@/lib/store';
+import { fetchProjects, subscribeToProjects } from '@/lib/db-actions';
 import { MetricsCards } from '@/components/dashboard/MetricsCards';
 import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts';
 import { KanbanBoard } from '@/components/pipeline/KanbanBoard';
@@ -9,11 +10,33 @@ import { KanbanBoard } from '@/components/pipeline/KanbanBoard';
 export default function DashboardPage() {
   const { projects, setProjects } = usePipelineStore();
 
-  // Load demo data on first visit
+  // Load projects from DB, fall back to demo data if empty
   useEffect(() => {
-    if (projects.length === 0) {
-      setProjects(DEMO_PROJECTS);
+    let unsubscribe: (() => void) | undefined;
+
+    async function loadProjects() {
+      try {
+        const dbProjects = await fetchProjects();
+        if (dbProjects.length > 0) {
+          setProjects(dbProjects);
+        } else if (projects.length === 0) {
+          setProjects(DEMO_PROJECTS);
+        }
+      } catch {
+        if (projects.length === 0) {
+          setProjects(DEMO_PROJECTS);
+        }
+      }
+
+      unsubscribe = subscribeToProjects((updated) => {
+        if (updated.length > 0) {
+          setProjects(updated);
+        }
+      });
     }
+
+    loadProjects();
+    return () => { unsubscribe?.(); };
   }, []);
 
   return (

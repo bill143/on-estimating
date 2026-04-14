@@ -1,0 +1,32 @@
+services:
+  ocr-gateway:
+    build:
+      context: ../python
+      dockerfile: ../docker/Dockerfile.ocr
+    container_name: nexus-ocr-gateway
+    ports:
+      - "8001:8001"
+    volumes:
+      - ocr-model-cache:/models
+    environment:
+      - OCR_MODEL_CACHE=/models
+      - PADDLE_MODEL_DIR=/models/paddle
+      - MINERU_CACHE=/models/mineru
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+volumes:
+  ocr-model-cache:
+    driver: local

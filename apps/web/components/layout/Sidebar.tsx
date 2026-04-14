@@ -43,7 +43,7 @@ const navSections: NavSection[] = [
     label: 'Intelligence',
     items: [
       { href: '/predictions', label: 'Cost Predictions', icon: Brain },
-      { href: '/auto-count', label: 'Auto-Count', icon: Scan },
+      { href: '/auto-count', label: 'Auto-Count', icon: ScanLine },
       { href: '/bid-sniper', label: 'Bid Sniper', icon: Crosshair, badge: '2' },
     ],
   },

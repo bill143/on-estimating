@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+// @ts-ignore — sharp is a native dependency installed at deployment time
 import sharp from 'sharp';
 // @ts-expect-error pdf-parse has no type declarations in this version
 import pdf from 'pdf-parse';

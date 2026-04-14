@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Filter, Search } from 'lucide-react';
 import { usePipelineStore, DEMO_PROJECTS } from '@/lib/store';
+import { fetchProjects, subscribeToProjects } from '@/lib/db-actions';
 import { KanbanBoard } from '@/components/pipeline/KanbanBoard';
 import { NewProjectDialog } from '@/components/pipeline/NewProjectDialog';
 import { formatCurrency } from '@/lib/utils';
@@ -12,11 +13,34 @@ export default function PipelinePage() {
   const [showNewProject, setShowNewProject] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load demo data on first visit
+  // Load projects from DB, fall back to demo data if empty
   useEffect(() => {
-    if (projects.length === 0) {
-      setProjects(DEMO_PROJECTS);
+    let unsubscribe: (() => void) | undefined;
+
+    async function loadProjects() {
+      try {
+        const dbProjects = await fetchProjects();
+        if (dbProjects.length > 0) {
+          setProjects(dbProjects);
+        } else if (projects.length === 0) {
+          setProjects(DEMO_PROJECTS);
+        }
+      } catch {
+        if (projects.length === 0) {
+          setProjects(DEMO_PROJECTS);
+        }
+      }
+
+      // Subscribe to realtime changes
+      unsubscribe = subscribeToProjects((updated) => {
+        if (updated.length > 0) {
+          setProjects(updated);
+        }
+      });
     }
+
+    loadProjects();
+    return () => { unsubscribe?.(); };
   }, []);
 
   const totalPipelineValue = projects

@@ -12,7 +12,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "db:migrate": "pnpm --filter @on/db migrate",
-    "db:seed": "pnpm --filter @on/db seed"
+    "db:seed": "pnpm --filter @on/db seed",
+    "ocr:dev": "cd packages/ocr-engine/python && uvicorn gateway:app --host 0.0.0.0 --port 8001 --reload",
+    "ocr:build": "pnpm --filter @on/ocr-engine build",
+    "docker:ocr": "docker compose -f packages/ocr-engine/docker/docker-compose.ocr.yml up"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

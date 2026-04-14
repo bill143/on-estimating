@@ -18,6 +18,10 @@
     },
     "db:seed": {
       "cache": false
+    },
+    "ocr-engine#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
     }
   }
 }

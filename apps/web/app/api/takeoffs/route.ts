@@ -3,7 +3,7 @@
 // POST /api/takeoffs   — save a new measurement from the plan viewer
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { createServerSupabase } from '@/lib/supabase-server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -43,7 +43,7 @@ const CreateTakeoffSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createServerSupabase();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createServerSupabase();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
