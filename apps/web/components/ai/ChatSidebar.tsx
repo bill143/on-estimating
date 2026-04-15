@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useChatStore } from '@/lib/agents/chat-store';
 import { cn } from '@/lib/utils';
+import { EchoVoice } from '@/components/echo/EchoVoice';
 
 const SUGGESTION_CHIPS = [
   'What is the total estimate cost?',
@@ -234,7 +235,8 @@ export function ChatSidebar() {
 
       {/* Input Area */}
       <div className="border-t border-gray-200 px-4 py-3 dark:border-gray-700">
-        <div className="flex items-end gap-2">
+        <EchoVoice />
+        <div className="mt-2 flex items-end gap-2">
           <textarea
             ref={inputRef}
             value={input}
