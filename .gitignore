@@ -37,3 +37,7 @@ supabase/.temp/
 
 desktop.ini
 *.ini
+
+# TypeScript build artifacts
+tsconfig.tsbuildinfo
+apps/web/tsconfig.tsbuildinfo
