@@ -3,7 +3,7 @@
 // POST /api/plan-sets        — create a new plan set (metadata only — file goes to Supabase Storage)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { createServerSupabase as createServerSupabaseClient } from '@/lib/supabase-server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -30,7 +30,7 @@ const CreatePlanSetSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerSupabase();
+    const supabase = createServerSupabaseClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabase();
+    const supabase = createServerSupabaseClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

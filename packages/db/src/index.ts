@@ -1,5 +1,9 @@
 // @on/db � Shared types, enums, and RBAC for the on-estimating monorepo
  
+// Supabase Database type — placeholder until generated via `supabase gen types typescript`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Database = any;
+
 export type BidStage = 'lead' | 'estimating' | 'review' | 'submitted' | 'won' | 'lost';
  
 export const STAGE_CONFIG: Record<BidStage, { label: string; color: string; bgColor: string }> = {

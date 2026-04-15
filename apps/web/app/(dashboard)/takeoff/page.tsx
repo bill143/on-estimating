@@ -1,10 +1,13 @@
 'use client';
- 
+
 import dynamic from 'next/dynamic';
 import { ScanLine } from 'lucide-react';
- 
+
 const InteractivePlanViewer = dynamic(
-  () => import('@/components/takeoff/interactive-plan-viewer'),
+  () =>
+    import('@/components/takeoff/interactive-plan-viewer').then(
+      (mod) => mod.default
+    ),
   {
     ssr: false,
     loading: () => (
@@ -20,7 +23,7 @@ const InteractivePlanViewer = dynamic(
     ),
   }
 );
- 
+
 export default function TakeoffPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -36,7 +39,7 @@ export default function TakeoffPage() {
         </div>
       </div>
       <div className="min-h-0 flex-1">
-        <InteractivePlanViewer planUrl="" />
+        <InteractivePlanViewer />
       </div>
     </div>
   );

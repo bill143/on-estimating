@@ -43,7 +43,7 @@ const navSections: NavSection[] = [
     label: 'Intelligence',
     items: [
       { href: '/predictions', label: 'Cost Predictions', icon: Brain },
-      { href: '/auto-count', label: 'Auto-Count', icon: ScanLine },
+      { href: '/auto-count', label: 'Auto-Count', icon: Brain },
       { href: '/bid-sniper', label: 'Bid Sniper', icon: Crosshair, badge: '2' },
     ],
   },
@@ -180,3 +180,4 @@ export function Sidebar() {
     </aside>
   );
 }
+

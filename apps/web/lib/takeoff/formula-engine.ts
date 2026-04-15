@@ -4,7 +4,6 @@
  * Uses mathjs for safe expression parsing — no eval/injection possible.
  */
 
-// @ts-ignore — mathjs will be installed when takeoff formula feature is activated
 import { create, all, MathJsInstance } from 'mathjs';
 
 export interface FormulaValidation {
@@ -23,7 +22,6 @@ export interface FormulaResult {
 }
 
 /** Whitelist of allowed mathjs functions for construction formulas */
-// @ts-ignore Reserved for Phase 2 function whitelist enforcement
 const ALLOWED_FUNCTIONS = new Set([
   'add', 'subtract', 'multiply', 'divide',
   'pow', 'sqrt', 'abs', 'ceil', 'floor', 'round',

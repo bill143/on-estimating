@@ -60,7 +60,7 @@ export interface CalibrationState {
 }
 
 interface InteractivePlanViewerProps {
-  planUrl: string;
+  planUrl?: string;
   pageIndex?: number;
   measurements?: Measurement[];
   detectedElements?: DetectedOverlay[];
@@ -237,7 +237,7 @@ function MeasurementPanel({
 // ============================================================================
 
 export default function InteractivePlanViewer({
-  planUrl,
+  planUrl = '',
   pageIndex = 0,
   measurements: externalMeasurements = [],
   detectedElements = [],
