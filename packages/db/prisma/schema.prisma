@@ -496,6 +496,32 @@ model Plan {
 }
 
 // ============================================
+// ORGANIZATION SETTINGS
+// ============================================
+
+model OrganizationSettings {
+  id                   String   @id @default(uuid())
+  orgId                String   @unique @map("org_id")
+  companyName          String   @default("") @map("company_name")
+  ueiNumber            String   @default("") @map("uei_number")
+  cageCode             String   @default("") @map("cage_code")
+  sdvosbCertified      Boolean  @default(false) @map("sdvosb_certified")
+  defaultOverheadPct   Decimal  @default(10) @map("default_overhead_pct") @db.Decimal(5, 2)
+  defaultProfitPct     Decimal  @default(10) @map("default_profit_pct") @db.Decimal(5, 2)
+  defaultBondPct       Decimal  @default(1.5) @map("default_bond_pct") @db.Decimal(5, 2)
+  defaultInsurancePct  Decimal  @default(2.0) @map("default_insurance_pct") @db.Decimal(5, 2)
+  defaultContingencyPct Decimal @default(0) @map("default_contingency_pct") @db.Decimal(5, 2)
+  defaultLaborBurdenPct Decimal @default(0) @map("default_labor_burden_pct") @db.Decimal(5, 2)
+  logoUrl              String?  @map("logo_url")
+  region               String   @default("")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @default(now()) @map("updated_at")
+
+  @@schema("public")
+  @@map("organization_settings")
+}
+
+// ============================================
 // AUDIT LOG
 // ============================================
 
